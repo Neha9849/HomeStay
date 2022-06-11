@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <iframe src="http://maps.google.com/maps?q=25.3076008,51.4803216&z=16&output=embed" height="450" width="600"></iframe>
+    <iframe src="http://maps.google.com/maps?hyderabad" height="450" width="600"></iframe>
+    
+    <input type="text"required id="autocomplete">
+</body>
+
+
+<script>
+function initAutocomplete() {
+   new google.maps.places.Autocomplete(
+          (document.getElementById('autocomplete')),
+          {types: ['geocode']}
+   );
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=&libraries=places&callback=initAutocomplete"
+                async defer></script>
+
+</html>

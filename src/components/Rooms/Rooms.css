@@ -1,0 +1,19 @@
+.rooms .cards{
+    max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  gap: 2rem;
+}
+@media (min-width: 600px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 900px) {
+    .cards { grid-template-columns: repeat(3, 1fr); }
+  }
+.rooms .cardRoom {
+    /* background-color: #f7f7f7; */
+    background-color: var(--border);
+    color: white;
+    height: 300px;
+    border-radius:10px;
+  }

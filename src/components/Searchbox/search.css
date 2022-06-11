@@ -1,0 +1,64 @@
+
+.banner{
+  z-index:-12;
+  height:500px;
+  background-image:url('./../../images/find.jpg');
+  background: linear-gradient(to left,rgba(78, 76, 76, 0), rgba(228, 225, 225, 0.118)), url("./../../images/find.jpg") ;
+  background-size: cover;
+  background-position: center center;
+}
+@media (max-width: 1300px){
+  .banner{
+    /* background:unset !important; */
+    background: linear-gradient(to left,rgba(255, 255, 255, 0.048), rgba(228, 225, 225, 0.092)), url("./../../images/find.jpg") ;
+  }
+}
+.banner .bannerHeading{
+  display:flex !important;
+  align-items: center !important;
+
+}
+.banner .bannerHeading h1{
+  padding:70px !important;
+  font-size: 3rem;
+  font-weight:600;
+
+}
+
+.searchContainer {
+  margin:0 auto;
+  box-shadow: var(--shadow);
+  padding: 15px;
+  max-width:1100px;
+  background-color:white;
+  position:relative;
+  top:-80px;
+}
+
+.searchContainer .geoapify-autocomplete-input {
+  width: 100%;
+  border: none;
+}
+.searchContainer .geoapify-autocomplete-input:focus {
+  border: none !important;
+}
+.searchContainer .geoapify-autocomplete-input:focus-visible {
+  border: none !important;
+  outline: none !important;
+}
+.searchContainer .geoapify-close-button {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+.searchContainer .form-control:focus{
+      box-shadow: none !important;
+      border:1px solid var(--border);
+}
+.searchContainer input{
+    color:var(--text-secondary) !important;
+}
+/* transparent place folder */
+.searchContainer input::placeholder {
+    color: transparent;
+}

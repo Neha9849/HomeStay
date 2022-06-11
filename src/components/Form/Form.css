@@ -1,0 +1,69 @@
+.formContainer {
+}
+.form {
+  margin-top: 70px;
+  width: 600px;
+}
+.form .next {
+  float: right;
+}
+
+.form .form-control{
+  padding:10px 0;
+  border:none;
+  border-bottom:1px solid black;
+  border-radius:0;
+}
+.form .form-control:focus{
+  box-shadow: none !important;
+  border-bottom:1px solid black;
+}
+
+/* autocomplete */
+#autocomplete .geoapify-autocomplete-input {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-bottom: 1px solid var(--text);
+}
+#autocomplete .geoapify-autocomplete-input:focus {
+  border: none;
+  border-bottom: 1px solid var(--text);
+  border-bottom: 1px solid var(--text);
+}
+#autocomplete
+.geoapify-autocomplete-input:focus-visible {
+    border: none;
+    border-bottom: 1px solid var(--text);
+    outline:none !important;
+}
+.autocomplete-container {
+  position: relative;
+}
+
+.geoapify-autocomplete-items {
+    background-color:#dddddd76;
+    padding:20px;
+    position:absolute;
+    width:400px;
+}
+.geoapify-autocomplete-item {
+   cursor: pointer;
+   padding:10px;
+   border-bottom: 1px solid var(--border);
+}
+.geoapify-autocomplete-item:focus{
+    background-color:rgba(146, 146, 146, 0.993) !important;
+    
+}
+.geoapify-autocomplete-item.text {
+   padding:5px;
+}
+.icon{
+    margin-right:10px !important;
+}
+.geoapify-close-button {
+    position:absolute;
+    top:10px;
+    right:10px;
+}
