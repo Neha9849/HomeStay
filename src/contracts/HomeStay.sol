@@ -3,15 +3,19 @@ pragma experimental ABIEncoderV2;
 
 import "./safemath.sol";
 
+/// @title main contract of homeStay
+/// @author yaswanthsaivendra
 contract HomeStay {
     using SafeMath for uint256;
 
     uint public roomCount;
     uint public bookingCount;
+    address payable public owner;
 
     constructor() public {
         roomCount = 0;
         bookingCount = 0;
+        owner = msg.sender;
     }
 
     mapping(address => Landlord) public landLordDetails;
@@ -27,7 +31,7 @@ contract HomeStay {
     }
 
     event LandlordCreated (
-        address indexed _owner,
+        address indexed _landlord,
         string _name,
         string _email,
         string _contactNumber
@@ -46,7 +50,7 @@ contract HomeStay {
         RoomType roomType;
         string imgHashes;
         string description;
-        address payable owner;
+        address payable landlord;
         uint upVotes;
         uint rentPerDay;    //in wei, in frontend - ether
         uint8 numberOfGuestsCanStay;
@@ -54,10 +58,10 @@ contract HomeStay {
     }
 
     event RoomCreated (
-        uint roomCount,
+        uint _roomId,
         string _roomName,
         RoomType _roomType,
-        address payable _owner,
+        address payable _landlord,
         uint _rentPerDay
     );
 
@@ -71,7 +75,7 @@ contract HomeStay {
         uint bookedAt;
         uint amount;
         uint totalDays;
-        address payable owner;
+        address payable landlord;
         address payable tenant;
         BookingStatus bookingStatus;
     }
@@ -79,7 +83,7 @@ contract HomeStay {
     event Booked (
         uint _bookingId,
         uint _roomId,
-        address payable indexed _owner,
+        address payable indexed _landlord,
         address payable indexed _tenant,
         BookingStatus _bookingStatus
     );
@@ -87,7 +91,7 @@ contract HomeStay {
      event BookingCancelled (
         uint _bookingId,
         uint _roomId,
-        address payable indexed _owner,
+        address payable indexed _landlord,
         address payable indexed _tenant,
         BookingStatus _bookingStatus
     );
@@ -106,8 +110,8 @@ contract HomeStay {
         require(bytes(_description).length > 0);
         RoomType ourRoomType = RoomType(_roomType);
         rooms.push(Room(roomCount, _roomName, ourRoomType, _imgHashes , _description, msg.sender, 0, _rentPerDay, _numberOfGuestsCanStay, Location(_lat, _long)));
-        roomCount = roomCount.add(1);
         emit RoomCreated(roomCount ,_roomName, ourRoomType, msg.sender, _rentPerDay);
+        roomCount = roomCount.add(1);
         return true;
     }
 
@@ -117,25 +121,31 @@ contract HomeStay {
 
     // function getRoomsOfOwner()
 
-    function bookRoom(uint _roomId, uint _startTime, uint _endTime, address payable _owner, uint8 _bookingStatus) payable external returns(bool) {
+    /// @notice function to book a room
+    /// @dev We will take 1% ether of every booking payment so that it make up to the revenue of our app and this revenue generated can be used for gas fees for further transactions
+    /// @param _startTime start time of our booking in seconds from unix timestamp
+    /// @param _endTime end time of our booking in seconds from unix timestamp
+    /// @return true returns a boolean true and emit an event if the booking got succeed
+    function bookRoom(uint _roomId, uint _startTime, uint _endTime, address payable _landlord) payable external returns(bool) {
         require(_roomId < roomCount);
-        require(rooms[_roomId].owner == _owner);
-        for(uint i=0; i < bookingCount; i++) {
-            if(bookings[i].bookingStatus != BookingStatus.Refunded) {
-                if(bookings[i].startTime <= _startTime){
-                require(bookings[i].endTime <= _endTime);
-                }
-                else if(bookings[i].startTime >= _startTime){
-                    require(bookings[i].endTime >= _endTime);
-                }
-            }
-        }
+        require(rooms[_roomId].landlord == _landlord);
+        // for(uint i=0; i < bookingCount-1; i++) {
+        //     if(bookings[i].bookingStatus != BookingStatus.Refunded) {
+        //         if(bookings[i].startTime <= _startTime){
+        //         require(bookings[i].endTime <= _endTime);
+        //         }
+        //         else if(bookings[i].startTime >= _startTime){
+        //             require(bookings[i].endTime >= _endTime);
+        //         }
+        //     }
+        // }
         uint _days = (_endTime - _startTime) / 60 / 60 / 24;
         require(_days*(rooms[_roomId].rentPerDay) == msg.value);
-        BookingStatus _ourBookingStatus = BookingStatus(_bookingStatus);
-        bookings.push(Booking(bookingCount, _roomId, _startTime, _endTime, block.timestamp, msg.value, _days, _owner, msg.sender, _ourBookingStatus));
-        emit Booked(bookingCount, _roomId, _owner, msg.sender, _ourBookingStatus);
-        bookingCount = bookingCount.add(1);
+        // uint _amount = (99 * msg.value) /100;
+        // BookingStatus _bookingStatus = BookingStatus.Booked;
+        // bookings.push(Booking(bookingCount, _roomId, _startTime, _endTime, block.timestamp, _amount, _days, _landlord, msg.sender, _bookingStatus));
+        // emit Booked(bookingCount, _roomId, _landlord, msg.sender, _bookingStatus);
+        // bookingCount = bookingCount.add(1);
         return true;
 
     }
@@ -147,14 +157,15 @@ contract HomeStay {
 
     function cancelBooking(uint _bookingId) public payable returns(bool) {
         require(_bookingId < bookingCount);
-        require(bookings[_bookingId].bookingStatus == BookingStatus.Booked);
-        require(bookings[_bookingId].startTime > block.timestamp);
-        require(bookings[_bookingId].tenant == msg.sender);
-        bookings[_bookingId].bookingStatus == BookingStatus.Refunded;
-        uint amountToRefund = ((bookings[_bookingId].startTime - block.timestamp)*(100) * bookings[_bookingId].amount)/(bookings[_bookingId].startTime - bookings[_bookingId].bookedAt);
+        Booking memory _booking = bookings[_bookingId];
+        require(_booking.bookingStatus == BookingStatus.Booked);
+        require(_booking.startTime > block.timestamp);
+        require(_booking.tenant == msg.sender);
+        _booking.bookingStatus = BookingStatus.Refunded;
+        uint amountToRefund = ((_booking.startTime - block.timestamp)*(100) * _booking.amount)/(_booking.startTime - _booking.bookedAt);
         msg.sender.transfer(amountToRefund);
-        bookings[_bookingId].owner.transfer(bookings[_bookingId].amount - amountToRefund);
-        emit BookingCancelled(_bookingId, bookings[_bookingId].roomId, bookings[_bookingId].owner, msg.sender, bookings[_bookingId].bookingStatus);
+        _booking.landlord.transfer(_booking.amount - amountToRefund);
+        emit BookingCancelled(_bookingId, _booking.roomId, _booking.landlord, msg.sender, _booking.bookingStatus);
         return true;
     }
 
