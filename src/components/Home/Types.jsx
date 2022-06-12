@@ -9,16 +9,7 @@ import villa from "./../../images/types/villa.jpg";
 import penthouse from "./../../images/types/penthouse.png";
 import bungalow from "./../../images/types/bungalow.jpg";
 const Types = () => {
-    const breakpoints={
-            499: {
-                slidesPerView: 1,
-                spaceBetweenSlides: 50
-            },
-            999: {
-                slidesPerView: 2,
-                spaceBetweenSlides: 50
-            }
-    }
+  
   return (
     <div className="types p-2 mt-5">
       <h1 className="text-center p-1 mt-5">
