@@ -42,6 +42,8 @@ contract HomeStay {
     struct Location {
         string latitude;
         string longitude;
+        string state;
+        string country;
     }
 
     struct Room {
@@ -105,11 +107,11 @@ contract HomeStay {
         return true;
     }
 
-    function createRoom(string memory _roomName, uint8 _roomType, string memory _imgHashes, string memory _description, uint _rentPerDay, uint8 _numberOfGuestsCanStay, string memory _lat, string memory _long) public returns(bool){
+    function createRoom(string memory _roomName, uint8 _roomType, string memory _imgHashes, string memory _description, uint _rentPerDay, uint8 _numberOfGuestsCanStay, string memory _lat, string memory _long, string memory _state, string memory _country) public returns(bool){
         require(bytes(_roomName).length > 0);
         require(bytes(_description).length > 0);
         RoomType ourRoomType = RoomType(_roomType);
-        rooms.push(Room(roomCount, _roomName, ourRoomType, _imgHashes , _description, msg.sender, 0, _rentPerDay, _numberOfGuestsCanStay, Location(_lat, _long)));
+        rooms.push(Room(roomCount, _roomName, ourRoomType, _imgHashes , _description, msg.sender, 0, _rentPerDay, _numberOfGuestsCanStay, Location(_lat, _long, _state, _country)));
         emit RoomCreated(roomCount ,_roomName, ourRoomType, msg.sender, _rentPerDay);
         roomCount = roomCount.add(1);
         return true;
