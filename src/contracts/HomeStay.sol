@@ -160,19 +160,34 @@ contract HomeStay {
         return bookings;
     }
 
-    function cancelBooking(uint _bookingId) public payable returns(bool) {
+    function cancelBooking(uint _bookingId) public returns(bool) {
         require(_bookingId < bookingCount);
         Booking memory _booking = bookings[_bookingId];
         require(_booking.bookingStatus == BookingStatus.Booked);
         require(_booking.startTime > block.timestamp);
-        require(_booking.tenant == msg.sender);
+        // address payable _tenant = address(uint160(msg.sender));
+        // require(address(_booking.tenant) == address(uint160(msg.sender)));
         _booking.bookingStatus = BookingStatus.Refunded;
-        uint amountToRefund = ((_booking.startTime - block.timestamp)*(100) * _booking.amount)/(_booking.startTime - _booking.bookedAt);
-        msg.sender.transfer(amountToRefund);
-        _booking.landlord.transfer(_booking.amount - amountToRefund);
-        emit BookingCancelled(_bookingId, _booking.roomId, _booking.landlord, msg.sender, _booking.bookingStatus);
+        uint x = _booking.startTime.sub(block.timestamp);
+        uint y = _booking.startTime.sub(_booking.bookedAt);
+        uint _amountToRefund = x.div(y);
+        _amountToRefund = _amountToRefund.mul(100);
+        _amountToRefund= _amountToRefund.mul(_booking.amount);
+        msg.sender.transfer(_amountToRefund);
+        _booking.landlord.transfer(_booking.amount.sub(_amountToRefund));
+         emit BookingCancelled(_bookingId, _booking.roomId, _booking.landlord, msg.sender, _booking.bookingStatus);
         return true;
     }
 
+
+
     // function checkIn
+    // function checkIn() payable {
+
+    // }
+
+    // function upVote(uint _roomId) public {
+
+    // }
+    
 }

@@ -7,7 +7,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract("HomeStay", ([landlord, tenant]) => {
+contract("HomeStay", ([owner, landlord, tenant, helperAccount]) => {
 
     let homeStay;
 
@@ -119,7 +119,75 @@ contract("HomeStay", ([landlord, tenant]) => {
         await homeStay.createRoom(roomName, roomType, imgHashes, description, web3.utils.toWei(rentPerDay.toString(), "ether"), numberOfGuestsCanStay, lat, long, state, country, {from : landlord});
         await homeStay.createRoom(roomName1, roomType1, imgHashes1, description1, web3.utils.toWei(rentPerDay1.toString(), "ether"), numberOfGuestsCanStay1, lat1, long1, state1, country1, {from : landlord});
         const returnValue = await homeStay.getAllRooms.call();
-        console.log(returnValue);
+        // console.log(returnValue);
+      });
+    });
+
+
+    describe("tests the bookRoom function", async () => {
+      const roomId = 0;
+      const startTime = 1749709800;
+      const endTime = 1749882600;
+      const rentPerDay = 0.0005;
+      const days = 2;
+      it("ensures that the room id is less than room count", async () => {
+        await homeStay.bookRoom(1000, startTime, endTime, landlord, {from : tenant, value: web3.utils.toWei((rentPerDay*days).toString(), "ether") }).should.be.rejected;
+      });
+      it("ensures that the landlord provided is same as the room landlord", async () => {
+        await homeStay.bookRoom(roomId, startTime, endTime, helperAccount, {from : tenant, value: web3.utils.toWei((rentPerDay*days).toString(), "ether") }).should.be.rejected;
+      });
+      it("ensures that the amount paid is same as the total room rent", async () => {
+        await homeStay.bookRoom(roomId, startTime, endTime, landlord, {from : tenant, value: web3.utils.toWei((0.0006*days).toString(), "ether") }).should.be.rejected;
+      });
+      it("to ensure that the room is created", async () => {
+        const result = await homeStay.bookRoom(roomId, startTime, endTime, landlord, {from : tenant, value: web3.utils.toWei((rentPerDay*days).toString(), "ether") });
+        const booking = await homeStay.bookings(0);
+        assert.equal(booking.roomId, roomId, "roomId");
+        assert.equal(booking.landlord, landlord, "landlord");
+        assert.equal(booking.startTime, startTime, "startTime");
+        assert.equal(booking.tenant, tenant, "tenant");
+        assert.equal(booking.bookingStatus, 0 , "bookingStatus");
+
+
+        //to test the booking event
+        assert.equal(result.receipt.logs.length, 1, "should trigger one event");
+        assert.equal(result.receipt.logs[0].event, "Booked", "should trigger Booked event");
+        assert.equal(result.receipt.logs[0].args._roomId, roomId, "logs the roomId");
+        assert.equal(result.receipt.logs[0].args._landlord, landlord, "logs the landlord address");
+        assert.equal(result.receipt.logs[0].args._tenant, tenant, "logs the tenant address");
+        assert.equal(result.receipt.logs[0].args._bookingStatus, 0, "logs the bookingStatus");
+      });
+    });
+
+    describe("tests the getAllbookings function", async () => {
+      const roomId = 1;
+      const startTime = 1750055400;
+      const endTime = 1750401000;
+      const rentPerDay = 0.0005;
+      const days = 4;
+      it("logs all the bookings", async () => {
+        await homeStay.bookRoom(roomId, startTime, endTime, landlord, {from : tenant, value: web3.utils.toWei((rentPerDay*days).toString(), "ether") });
+        const bookings = await homeStay.getAllBookings();
+        // console.log(bookings);
+      });
+    });
+
+    describe("checks the cancelBooking function", async () => {
+      const bookingId = 0;
+      it("ensures that the bookingId is less than booking count", async () => {
+        await homeStay.cancelBooking(1000, {from : tenant}).should.be.rejected;
+      });
+
+      it("ensures that the event BookingCancelled is emited with correct values", async () => {
+        const result = await homeStay.cancelBooking(bookingId, {from : tenant});
+        // console.log(result);
+        assert.equal(result.receipt.logs.length, 1, "should trigger one event");
+        assert.equal(result.receipt.logs[0].event, "BookingCancelled", "should trigger BookingCancelled event");
+        assert.equal(result.receipt.logs[0].args._roomId, 0, "logs the roomId");
+        assert.equal(result.receipt.logs[0].args._landlord, landlord, "logs the landlord address");
+        assert.equal(result.receipt.logs[0].args._tenant, tenant, "logs the tenant address");
+        assert.equal(result.receipt.logs[0].args._bookingStatus, 1, "logs the bookingStatus");
+        assert.equal(result.receipt.logs[0].args._bookingId, bookingId, "logs the bookingId");
       });
     });
 
