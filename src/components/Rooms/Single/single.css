@@ -1,0 +1,25 @@
+.single .imgWraper{
+    max-width: 600px !important;
+}
+.single .singleWrapper{
+    max-width:1000px;
+    margin:auto;
+}
+.single .img-container img{
+    height:600px;
+    object-fit: cover;
+}
+.single .details{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap: wrap;
+    align-items:center;
+}
+.single .left{
+    max-width:500px;
+
+}
+.single .right{
+    width:300px;
+    box-shadow: var(--shadow);
+}
