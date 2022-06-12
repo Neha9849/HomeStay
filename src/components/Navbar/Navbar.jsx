@@ -2,7 +2,7 @@ import React from "react";
 import logo from "./../../images/logo.png";
 import "./Navbar.css";
 import { Link } from "react-router-dom";
-const Navbar = ({explore}) => {
+const Navbar = ({explore,url}) => {
   return (
     <>
       <nav className="navbar navbar-expand-lg   static-top">
@@ -25,6 +25,9 @@ const Navbar = ({explore}) => {
           </button>
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <div className="navbar-nav ms-auto">
+            <Link to={url}>
+            {/* <button className="btn btnProfile">Profile</button> */}
+            </Link>
               {explore? null : 
                 <Link to="/rooms">
                 <button className="btn btnPrimary mx-2">
@@ -35,6 +38,7 @@ const Navbar = ({explore}) => {
               <Link to="/host">
                 <button className="btn btnSecondary">Host Rooms</button>
               </Link>
+             
             </div>
           </div>
         </div>

@@ -3,7 +3,11 @@ import "./search.css";
 import { useEffect } from "react";
 import { GeocoderAutocomplete } from "@geoapify/geocoder-autocomplete";
 
-const Searchbox = ({ searchValues, setState }) => {
+const Searchbox = ({ searchValues, setState,setSearchClick }) => {
+  const filter = () => {
+    setSearchClick(true);
+    
+  };
   const handleChange = (event) => {
     const name = event.target.name;
     const value = event.target.value;
@@ -19,12 +23,10 @@ const Searchbox = ({ searchValues, setState }) => {
     );
 
     autocomplete.on("select", (location) => {
-      // check selected location here
-      console.log(location);
-    });
-
-    autocomplete.on("suggestions", (suggestions) => {
-      // process suggestions here
+      const state = location.properties.state;
+      const country = location.properties.country;
+      const locationObj = { state, country };
+      setState((val) => ({ ...val, location: locationObj }));
     });
   }, []);
 
@@ -32,20 +34,15 @@ const Searchbox = ({ searchValues, setState }) => {
     <div className="w-100">
       <div className="banner ">
         <div className="h-100  bannerHeading">
-          
           <h1 className=" p-5">
-            <span className="tprimary">
-            Find &nbsp;
-            </span>
-             your place <br />
-           for together</h1>
-          
-       
+            <span className="tprimary">Find &nbsp;</span>
+            your place <br />
+            for together
+          </h1>
         </div>
-     
       </div>
-      
-       {/* <h1>Find your home for together</h1> */}
+
+      {/* <h1>Find your home for together</h1> */}
       <div className="searchContainer">
         <div className="row">
           <div className="col-lg-4 col-md-12 col-sm-12">
@@ -85,7 +82,9 @@ const Searchbox = ({ searchValues, setState }) => {
             />
           </div>
           <div className="col-lg-2 col-md-12 col-sm-12 flexc">
-            <button className="btn btnPrimary">Search</button>
+            <button className="btn btnPrimary" onClick={filter}>
+              Search
+            </button>
           </div>
         </div>
       </div>

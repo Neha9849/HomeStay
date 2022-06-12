@@ -4,10 +4,14 @@ import { MultiStepForm, Step } from "react-multi-form";
 import { useState, useEffect } from "react";
 import "./Form.css";
 import { GeocoderAutocomplete } from "@geoapify/geocoder-autocomplete";
-const Form = ({ contract, account }) => {
+import ipfsClient from "ipfs-http-client/dist/index.min.js";
+
+const Form = ({ contract, account, url }) => {
+  const ipfs = ipfsClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' })
   const [step, setStep] = useState(1);
   const [formDetails, setForm] = useState({});
   const [item, setItem] = useState("");
+  const [buffer,setBuffer]=useState({});
   useEffect(() => {
     //autocomplete
 
@@ -45,29 +49,63 @@ const Form = ({ contract, account }) => {
     console.log("submit");
     // function createRoom(string memory _roomName, uint8 _roomType, string memory _imgHashes, string memory _description, uint _rentPerDay, uint8 _numberOfGuestsCanStay, string memory _lat, string memory _long)
     // console.log(formDetails);
+    // function createRoom(string memory _roomName, uint8 _roomType, string memory _imgHashes, string memory _description, uint _rentPerDay, uint8 _numberOfGuestsCanStay, string memory _lat, string memory _long, string memory _state, string memory _country)
     const created = await contract.methods
       .createRoom(
         formDetails.roomName,
         Number(formDetails.type),
         formDetails.images,
         formDetails.description,
-        window.web3.utils.toWei(String(formDetails.prize),"ether"),
+        window.web3.utils.toWei(String(formDetails.prize), "ether"),
         // Number(formDetails.prize),
         Number(formDetails.numberOfGuestsCanStay),
         String(formDetails.lat),
-        String(formDetails.lon)
+        String(formDetails.lon),
+        String(formDetails.state),
+        String(formDetails.country)
         // "da","des",1,3,"das","lon"
       )
       .send({ from: account });
     console.log(created);
+    // function createLandlordAccount(string memory _name, string memory _email, string memory _contactNumber)
+    const landlordCreated = await contract.methods
+      .createLandlordAccount(
+        formDetails.username,
+        formDetails.email,
+        formDetails.phone
+      )
+      .send({ from: account });
+    console.log(landlordCreated);
     // console.log(contract)
     // const rooms = await contract.methods.getAllRooms().call({ from: account })
     // console.log(rooms[0].location.latitude);
   };
+  // const fileUpload=(event)=>{
+  //   event.preventDefault()
+  //   const file = event.target.files[0]
+  //   const reader = new window.FileReader()
+  //   reader.readAsArrayBuffer(file)
+
+  //   reader.onloadend = () => {
+  //     // this.setState({ buffer: Buffer(reader.result) })
+  //     setBuffer({buffer:ipfsClient().Buffer(reader.result)})
+  //     // console.log('buffer', this.state.buffer)
+
+  //   }
+  // }
+//   useEffect(() => {
+//  ipfs.add(buffer,(err,res)=>{
+//   if(err){
+//     console.log(res);
+
+//   }
+//   console.log(res);
+//  })
+//   },[buffer])
 
   return (
     <div>
-      <Navbar explore={false} />
+      <Navbar explore={false} url={url} />
       <div className="formContainer flexc">
         {/* form1 */}
         <div className="form">
@@ -207,9 +245,7 @@ const Form = ({ contract, account }) => {
                 </div>
                 {/* images here */}
                 <div className="m-5">
-                  <label htmlFor="prize">
-                    Prize
-                  </label>
+                  <label htmlFor="prize">Prize</label>
                   <input
                     type="number"
                     name="prize"
@@ -219,7 +255,19 @@ const Form = ({ contract, account }) => {
                     onChange={handleChange}
                     step=".01"
                   />
+                  
                 </div>
+                <div className="m-5">
+                    <label htmlFor="image">Image</label>
+                    <input
+                      type="file"
+                      name="image"
+                      id="image"
+                      className="form-control"
+                      value={formDetails.image || ""}
+                      
+                    />
+                  </div>
               </form>
               <div className="p-2">
                 <button

@@ -5,7 +5,7 @@ import {Link} from 'react-router-dom'
 const Card = ({ img, roomName, prize, type, upVotes }) => {
   return (
     <>
-    <Link to='/'>
+   
     <div className="cardRoom">
         <div className="img">
           <img src={img} alt={roomName} className="cardImg " />
@@ -23,7 +23,7 @@ const Card = ({ img, roomName, prize, type, upVotes }) => {
         
         </div>
       </div>
-    </Link>
+   
       
     </>
   );

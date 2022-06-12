@@ -7,10 +7,10 @@ import money from "./../../images/money.png";
 import search from "./../../images/search.png";
 import home from "./../../images/home.png";
 import { Link } from "react-router-dom";
-const Home = () => {
+const Home = ({url}) => {
   return (
     <>
-      <Navbar explore={false} />
+      <Navbar explore={false}  url={url} />
       <div className="home">
         <div className="left flexc w-100">
           <div>
