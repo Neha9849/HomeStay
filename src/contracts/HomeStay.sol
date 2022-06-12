@@ -126,7 +126,7 @@ contract HomeStay {
     /// @param _startTime start time of our booking in seconds from unix timestamp
     /// @param _endTime end time of our booking in seconds from unix timestamp
     /// @return true returns a boolean true and emit an event if the booking got succeed
-    function bookRoom(uint _roomId, uint _startTime, uint _endTime, address payable _landlord) payable external returns(bool) {
+    function bookRoom(uint _roomId, uint _startTime, uint _endTime, address payable _landlord) payable public returns(bool) {
         require(_roomId < roomCount);
         require(rooms[_roomId].landlord == _landlord);
         // for(uint i=0; i < bookingCount-1; i++) {
@@ -139,13 +139,16 @@ contract HomeStay {
         //         }
         //     }
         // }
-        uint _days = (_endTime - _startTime) / 60 / 60 / 24;
+        uint _days = _endTime.sub(_startTime);
+        _days = _days.div(86400);
         require(_days*(rooms[_roomId].rentPerDay) == msg.value);
-        // uint _amount = (99 * msg.value) /100;
-        // BookingStatus _bookingStatus = BookingStatus.Booked;
-        // bookings.push(Booking(bookingCount, _roomId, _startTime, _endTime, block.timestamp, _amount, _days, _landlord, msg.sender, _bookingStatus));
-        // emit Booked(bookingCount, _roomId, _landlord, msg.sender, _bookingStatus);
-        // bookingCount = bookingCount.add(1);
+        uint _amount = msg.value;
+        _amount = _amount.div(100);
+        _amount = _amount.mul(99);
+        BookingStatus _bookingStatus = BookingStatus.Booked;
+        bookings.push(Booking(bookingCount, _roomId, _startTime, _endTime, block.timestamp, _amount, _days, _landlord, msg.sender, _bookingStatus));
+        emit Booked(bookingCount, _roomId, _landlord, msg.sender, _bookingStatus);
+        bookingCount = bookingCount.add(1);
         return true;
 
     }
