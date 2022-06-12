@@ -3,25 +3,117 @@ import Navbar from "./../../Navbar/Navbar";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Scrollbar, A11y } from "swiper";
 import "./single.css";
+import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import apartment from "./../../../images/types/apartment.jpg";
 import house from "./../../../images/types/house.jpg";
 import villa from "./../../../images/types/villa.jpg";
 import penthouse from "./../../../images/types/penthouse.png";
 import bungalow from "./../../../images/types/bungalow.jpg";
 import ether from "./../../../images/ethereum.png";
-const Single = () => {
+
+const Single = ({ rooms, contract, account,url,bookings }) => {
+  const [id, setId] = useSearchParams();
+  const [type, setType] = useState();
+  const [single, setSingle] = useState({});
+  const [prize, setPrize] = useState();
+  const [string, setString] = useState("");
+  const [form, setForm] = useState({});
+  const [total, setTotal] = useState(0);
+  const [owner,setOwner]=useState({});
+  
+  useEffect(()=>{
+    const getOwnerDetails= async ()=>{
+     
+    console.log(single);
+    // const bookings= await contractObj.methods.getAllBookings().call({ from: account })
+    const landlord= await contract.methods.landLordDetails(single.landlord).call();
+      console.log(landlord)
+      setOwner(landlord)
+     
+    }
+    getOwnerDetails();
+    
+  },[single])
+  useEffect(() => {
+   
+    
+    const currentId = Number(id.get("id"));
+    rooms.map((room) => {
+      if (Number(room.roomId) == Number(currentId)) {
+        const Urlstring = `http://maps.google.com/maps?q=${room.location.latitude},${room.location.longitude}&z=16&output=embed`;
+        setString(Urlstring);
+        const converted = window.web3.utils.fromWei(
+          String(room.rentPerDay),
+          "ether"
+        );
+        setPrize(converted);
+        setSingle(room);
+        switch (Number(room.roomType)) {
+          case 0:
+            setType("Bungalow");
+            break;
+          case 1:
+            setType("Villa");
+            break;
+          case 2:
+            setType("Apartment");
+            break;
+          case 3:
+            setType("Penthouse");
+            break;
+          case 4:
+            setType("House");
+            break;
+          default:
+            setType("not mentioned");
+        }
+      }
+    });
+  });
+  useEffect(() => {
+    if (
+      typeof form.checkIn != "undefined" &&
+      typeof form.checkOut != "undefined"
+    ) {
+      let checkin = new Date(form.checkIn).getTime();
+      let checkout = new Date(form.checkOut).getTime();
+      console.log(`${checkin} nd ${checkout}`);
+      let val = ((checkout - checkin) / 8.64e7) * prize;
+      console.log(val);
+      setTotal(val);
+    }
+  }, [form]);
+
+  const handleChange = (event) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    setForm((values) => ({ ...values, [name]: value }));
+  };
+  const Book = async () => {
+    let checkin = Math.floor(new Date(form.checkIn).getTime() / 1000);
+    let checkout = Math.floor(new Date(form.checkOut).getTime() / 1000);
+    const booked = await contract.methods
+      .bookRoom(
+        Number(id.get("id")),
+        Number(checkin),
+        Number(checkout),
+        single.landlord
+      )
+      .send({
+        from: account,
+        value: window.web3.utils.toWei(String(total), "ether"),
+      });
+    console.log(booked);
+  };
+
   return (
     <>
       <div className="single">
-        <Navbar />
+        <Navbar url={url} />
         <div className="p-5 singleWrapper">
-          <h2>Adaaran Club Rannalhi</h2>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere
-            maiores consectetur esse aliquam qui tempora inventore obcaecati
-            perspiciatis aliquid asperiores temporibus magni sit natus
-            molestiae, quo libero ipsa reprehenderit iste!
-          </p>
+          <h2>{single.roomName}</h2>
+          <p>{single.description}</p>
           <div className="flexc imgWrapper my-5">
             <Swiper
               modules={[Navigation, Pagination, Scrollbar, A11y]}
@@ -60,22 +152,22 @@ const Single = () => {
           <div className="details my-4">
             <div className="left">
               <h3 className="py-2"> Room Details</h3>
-             <p>Type : Apartment</p>
-             <p>Guests : 4</p>
+              <p>Type :{type}</p>
+              <p>Guests : {single.numberOfGuestsCanStay}</p>
               <h3 className="py-2">Host Details</h3>
-              <p>Name : Neha Deekonda</p>
+              <p>Name :{owner.name}</p>
               <p>
                 Email :{" "}
-                <a href="mailto:nehadeekonda9849@gmail.com">
-                  nehadeekonda9849@gmail.com
+                <a href={`mailto:${owner.email}`}>
+                  {owner.email}
                 </a>
               </p>
-              <p>Phone : +91 9182469635</p>
+              <p>Phone : {owner.contactNumber}</p>
             </div>
             <div className="right card p-4">
               <div className="">
                 <h4 className="d-inline">
-                  2
+                  {prize}
                   <img src={ether} alt="" width="25px" />
                 </h4>
                 <small>Per Night</small>
@@ -86,6 +178,7 @@ const Single = () => {
                     className="form-control"
                     name="checkIn"
                     id="checkIn"
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="my-3">
@@ -95,20 +188,30 @@ const Single = () => {
                     className="form-control"
                     name="checkOut"
                     id="checkOut"
+                    onChange={handleChange}
                   />
                   <div className="my-3">
-                  <b>Total :</b> 
-                  <span> 16 ethereum</span>
-                  <button className="btn btnPrimary w-100 my-3">Book</button>
+                    <b>Total :</b>
+                    <span>{total}</span>
+                    <button
+                      className="btn btnPrimary w-100 my-3"
+                      onClick={Book}>
+                      Book
+                    </button>
                   </div>
-                 
                 </div>
               </div>
             </div>
           </div>
           <div className="map mt-5">
-            <h3 className="py-2"><span className="tprimary">Where</span> you'll be</h3>
-            <iframe src="http://maps.google.com/maps?q=25.3076008,51.4803216&z=16&output=embed" height="450" className="w-100 my-2"  title="map"></iframe>
+            <h3 className="py-2">
+              <span className="tprimary">Where</span> you'll be
+            </h3>
+            <iframe
+              src={string}
+              height="450"
+              className="w-100 my-2"
+              title="map"></iframe>
           </div>
         </div>
       </div>
